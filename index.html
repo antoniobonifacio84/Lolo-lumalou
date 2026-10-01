@@ -1,0 +1,965 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Lolo's Lumalou</title>
+<style>
+  :root{
+    --bg:#0b1020; --bg2:#141b33; --card:#1b2342; --card2:#232c52;
+    --txt:#e8ecff; --muted:#9aa6d4; --line:#2c3663;
+    --accent:#7c8cff; --accent2:#56e1c6; --warn:#ffb86b; --bad:#ff6b8a; --good:#56e1c6;
+    --radius:16px;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:linear-gradient(160deg,var(--bg),var(--bg2));color:var(--txt);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;min-height:100%}
+  body{padding:16px;max-width:720px;margin:0 auto;padding-bottom:120px}
+  h1{font-size:22px;margin:4px 0 2px;display:flex;align-items:center;gap:10px}
+  h1 .moon{font-size:24px}
+  .sub{color:var(--muted);font-size:13px;margin:0 0 16px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+    padding:16px;margin-bottom:14px}
+  .card h2{font-size:15px;margin:0 0 12px;color:var(--txt);display:flex;align-items:center;gap:8px}
+  .card h2 .ic{font-size:17px}
+  .row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+  .row.space{justify-content:space-between}
+  label.fld{display:flex;flex-direction:column;gap:5px;font-size:12px;color:var(--muted);flex:1;min-width:120px}
+  button{font:inherit;color:var(--txt);background:var(--card2);border:1px solid var(--line);
+    border-radius:12px;padding:11px 14px;cursor:pointer;transition:.15s;font-size:14px}
+  button:hover:not(:disabled){border-color:var(--accent);transform:translateY(-1px)}
+  button:active:not(:disabled){transform:translateY(0)}
+  button:disabled{opacity:.4;cursor:not-allowed}
+  button.primary{background:linear-gradient(135deg,var(--accent),#6a79e8);border-color:transparent;font-weight:600}
+  button.good{background:linear-gradient(135deg,var(--good),#3bc3a8);border-color:transparent;color:#06201a;font-weight:600}
+  button.ghost{background:transparent}
+  button.sm{padding:8px 11px;font-size:13px}
+  select,input[type=number],input[type=time]{font:inherit;color:var(--txt);background:var(--bg2);
+    border:1px solid var(--line);border-radius:10px;padding:9px 10px;width:100%}
+  input[type=range]{width:100%;accent-color:var(--accent)}
+  input[type=checkbox]{width:18px;height:18px;accent-color:var(--accent)}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(74px,1fr));gap:8px}
+  .swatch{aspect-ratio:1;border-radius:12px;border:2px solid transparent;cursor:pointer;
+    display:flex;align-items:flex-end;justify-content:center;padding:5px;font-size:10px;color:#0008;font-weight:700}
+  .swatch.sel{border-color:#fff;box-shadow:0 0 0 2px var(--accent)}
+  .tabs{display:flex;gap:6px;overflow-x:auto;margin-bottom:14px;padding-bottom:4px}
+  .tab{white-space:nowrap;padding:9px 14px;border-radius:999px;background:var(--card);border:1px solid var(--line);
+    font-size:13px;cursor:pointer}
+  .tab.active{background:var(--accent);border-color:transparent;color:#fff;font-weight:600}
+  .pane{display:none}
+  .pane.active{display:block}
+  .pill{font-size:11px;padding:3px 9px;border-radius:999px;background:var(--card2);color:var(--muted)}
+  .pill.on{background:rgba(86,225,198,.18);color:var(--good)}
+  .pill.off{background:rgba(255,107,138,.15);color:var(--bad)}
+  #bar{position:fixed;left:0;right:0;bottom:0;background:rgba(13,18,38,.95);border-top:1px solid var(--line);
+    padding:12px 16px;display:flex;gap:10px;align-items:center;backdrop-filter:blur(8px);z-index:20}
+  #bar .status{flex:1;font-size:13px;color:var(--muted)}
+  #dot{width:9px;height:9px;border-radius:50%;background:var(--bad);display:inline-block;margin-right:7px}
+  #dot.on{background:var(--good);box-shadow:0 0 8px var(--good)}
+  #dot.busy{background:var(--warn)}
+  .hint{font-size:12px;color:var(--muted);line-height:1.5;margin:8px 0 0}
+  .warnbox{background:rgba(255,184,107,.1);border:1px solid rgba(255,184,107,.4);border-radius:12px;
+    padding:11px 13px;font-size:12.5px;color:#ffd9ad;line-height:1.5}
+  .seg{display:flex;gap:0;border:1px solid var(--line);border-radius:12px;overflow:hidden}
+  .seg button{border:none;border-radius:0;border-right:1px solid var(--line);flex:1}
+  .seg button:last-child{border-right:none}
+  .seg button.sel{background:var(--accent);color:#fff}
+  #log{font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-size:11px;background:#070b18;
+    border:1px solid var(--line);border-radius:10px;padding:10px;max-height:200px;overflow:auto;white-space:pre-wrap;color:#8fe}
+  .daytabs{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:12px}
+  .daytabs button{padding:7px 10px;font-size:12px}
+  .daytabs button.sel{background:var(--accent);color:#fff;border-color:transparent}
+  table.caps{width:100%;border-collapse:collapse;font-size:11px;font-family:ui-monospace,monospace}
+  table.caps td,table.caps th{border:1px solid var(--line);padding:5px 7px;text-align:left}
+  .kv{display:flex;justify-content:space-between;font-size:12px;padding:4px 0;border-bottom:1px dashed var(--line)}
+  .kv:last-child{border:none}
+  .kv b{color:var(--muted);font-weight:500}
+  a{color:var(--accent2)}
+</style>
+</head>
+<body>
+  <div class="row space" style="align-items:flex-start">
+    <div>
+      <h1><span class="moon">🌙</span> Lolo's Lumalou</h1>
+      <p style="margin:2px 0 0;font-size:12px;color:var(--muted)">for Lorenzo "Lolo" Bonifacio Rodriguez 💛</p>
+    </div>
+    <div class="seg" id="lang-switch" style="flex:0 0 auto">
+      <button data-lang="it">IT</button><button data-lang="es">ES</button><button data-lang="en">EN</button>
+    </div>
+  </div>
+  <p class="sub" data-i18n="sub">Local Bluetooth control for the Fisher-Price Lumalou (gld09). No cloud, no account. Chrome/Edge on desktop or Android, or Bluefy on iOS.</p>
+
+  <div class="warnbox" style="margin-bottom:14px" data-i18n="findDevice">
+    💡 <b>Finding your device:</b> in the Bluetooth picker the Lumalou shows up with a <b>numeric name</b> (e.g. "1102184718"), <b>not</b> "Lumalou". Turn on Bluetooth, keep the cloud nearby, then Connect and pick the numeric entry.
+  </div>
+
+  <div class="tabs" id="tabs">
+    <div class="tab active" data-pane="routine" data-i18n="tabRoutine">Bedtime Routine</div>
+    <div class="tab" data-pane="schedule" data-i18n="tabBuilder">Routine Builder</div>
+    <div class="tab" data-pane="light" data-i18n="tabLight">Light</div>
+    <div class="tab" data-pane="audio" data-i18n="tabAudio">Audio</div>
+    <div class="tab" data-pane="timers" data-i18n="tabTimers">Nap &amp; Clock</div>
+    <div class="tab" data-pane="state" data-i18n="tabState">Device State</div>
+  </div>
+
+  <!-- ============ BEDTIME ROUTINE ============ -->
+  <section class="pane active" data-pane="routine">
+    <div class="card">
+      <h2 data-i18n="runRoutine">🛏️ Run the bedtime routine</h2>
+      <p class="hint" data-i18n="runRoutineHint">Enabling routine mode and starting it are two steps.</p>
+      <div class="row" style="margin-top:10px">
+        <button class="good" id="r-start" style="flex:2" data-i18n="startRoutine">▶ Start bedtime routine</button>
+        <button id="r-enable" class="sm" data-i18n="enableMode">Enable mode</button>
+        <button id="r-disable" class="sm ghost" data-i18n="disable">Disable</button>
+      </div>
+    </div>
+
+    <div class="card" style="border-color:var(--warn)">
+      <h2><span class="ic">🔬</span> Routine diagnostic</h2>
+      <p class="hint">Since the official app's routine fails too, this probes the device so we can see <i>why</i>. It reads state, sends the start sequence step by step, and reads state again — logging operationMode / routineModeStatus / currentStage before and after each step. Run it, then open the Device State tab → Log and share the output.</p>
+      <div class="row" style="margin-top:10px">
+        <button id="r-probe" class="primary" style="flex:1">🔬 Run routine probe (safe, read + start)</button>
+      </div>
+      <div id="probe-out" style="margin-top:12px"></div>
+    </div>
+
+    <div class="card">
+      <h2 data-i18n="liveTitle">🎛️ Live controls (while routine is running)</h2>
+      <div class="row">
+        <button id="rc-prev" class="sm" data-i18n="prevTask">⏮ Previous task</button>
+        <button id="rc-complete" class="primary sm" style="flex:1" data-i18n="completeTask">✓ Complete task →</button>
+        <button id="rc-restart" class="sm" data-i18n="restart">↻ Restart</button>
+      </div>
+      <div class="row" style="margin-top:8px">
+        <button id="rc-finish" class="sm" style="flex:1" data-i18n="completeSeq">⏭ Complete whole sequence</button>
+        <button id="rc-cancel" class="sm ghost" data-i18n="cancel">✕ Cancel routine</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2 data-i18n="routineAudio">🔊 Routine audio</h2>
+      <label class="fld"><span data-i18n="routineVol">Routine volume</span> <span id="rv-val" class="pill">—</span>
+        <input type="range" id="rv" min="0" max="10" value="5" />
+      </label>
+      <div class="row" style="margin-top:10px">
+        <button id="rm-on" class="sm" data-i18n="routineMusicOn">Routine music On</button>
+        <button id="rm-off" class="sm ghost" data-i18n="routineMusicOff">Routine music Off</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2 data-i18n="stageTitle">📍 Current stage</h2>
+      <div class="kv"><b data-i18n="opMode">Operation mode</b><span id="st-mode">—</span></div>
+      <div class="kv"><b data-i18n="routineModeKv">Routine mode</b><span id="st-rstatus">—</span></div>
+      <div class="kv"><b data-i18n="stage">Stage</b><span id="st-stage">—</span></div>
+      <div class="kv"><b data-i18n="alarmExec">Alarm executing</b><span id="st-alarm">—</span></div>
+    </div>
+  </section>
+
+  <!-- ============ ROUTINE BUILDER ============ -->
+  <section class="pane" data-pane="schedule">
+    <div class="card">
+      <h2 data-i18n="builderTitle">🧩 Routine builder</h2>
+      <p class="hint" data-i18n="builderHint">Build the bedtime routine's steps and write them to the cloud.</p>
+      <div class="row" style="margin-top:10px">
+        <label class="fld"><span data-i18n="nameOpt">Name (optional)</span><input type="text" id="rb-name" placeholder="Bedtime" /></label>
+        <label class="fld"><span data-i18n="startsAt">Starts at</span><input type="time" id="rb-time" value="19:30" /></label>
+      </div>
+      <label class="fld" style="margin-top:10px" data-i18n="onDays">On these days</label>
+      <div class="daytabs" id="rb-days"></div>
+    </div>
+
+    <div class="card">
+      <h2><span data-i18n="stepsTitle">📋 Steps</span> <span id="rb-free" class="pill"></span></h2>
+      <div id="rb-steps"></div>
+      <button id="rb-add" class="sm" style="margin-top:10px" data-i18n="addStep">➕ Add a step</button>
+      <p class="hint" id="rb-preview" style="font-family:ui-monospace,monospace"></p>
+    </div>
+
+    <div class="card">
+      <h2 data-i18n="writeTitle">☁️ Write to cloud</h2>
+      <p class="hint" data-i18n="writeHint">Writes this routine to each selected day. Data only.</p>
+      <div class="row" style="margin-top:10px">
+        <button id="rb-write" class="good" style="flex:1" data-needs-conn disabled data-i18n="saveRoutine">☁️ Save routine to selected days</button>
+        <button id="rb-clear" class="sm ghost" data-needs-conn disabled data-i18n="clearDays">Clear selected days</button>
+      </div>
+      <div id="rb-out" style="margin-top:10px"></div>
+    </div>
+
+    <div class="card">
+      <h2 data-i18n="readTitle">🔍 Read routines from device</h2>
+      <button id="rb-read" class="sm primary" data-needs-conn disabled data-i18n="readAll">Read all 7 days</button>
+      <table class="caps" id="cap-table" style="margin-top:12px">
+        <thead><tr><th>Day</th><th>Time</th><th>Steps (task IDs)</th></tr></thead>
+        <tbody id="cap-body"><tr><td colspan="3" style="color:var(--muted)">Not read yet.</td></tr></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ============ LIGHT ============ -->
+  <section class="pane" data-pane="light">
+    <div class="card">
+      <h2 data-i18n="colorTitle">💡 Color</h2>
+      <div class="grid" id="colors"></div>
+      <div class="row" style="margin-top:12px">
+        <button id="light-off" class="ghost sm" data-i18n="backlightOff">Turn off cloud backlight</button>
+      </div>
+    </div>
+    <div class="card">
+      <h2 data-i18n="brightTitle">🔆 Brightness</h2>
+      <label class="fld"><span data-i18n="level">Level</span> <span id="br-val" class="pill">—</span>
+        <input type="range" id="br" min="0" max="10" value="6" />
+      </label>
+    </div>
+    <div class="card">
+      <h2 data-i18n="lightTimer">⏱️ Light timer</h2>
+      <label class="fld"><span data-i18n="duration">Duration</span>
+        <select id="light-dur">
+          <option value="5">1 min</option><option value="0">15 min</option>
+          <option value="1">30 min</option><option value="2" selected>60 min</option>
+          <option value="3">90 min</option><option value="4">Continuous</option>
+        </select>
+      </label>
+      <button id="light-dur-set" class="sm primary" style="margin-top:10px" data-i18n="setLightDur">Set light duration</button>
+    </div>
+  </section>
+
+  <!-- ============ AUDIO ============ -->
+  <section class="pane" data-pane="audio">
+    <div class="card">
+      <h2 data-i18n="playTitle">🎵 Play audio</h2>
+      <div class="grid" id="audio-grid" style="grid-template-columns:repeat(auto-fill,minmax(110px,1fr))"></div>
+      <div class="row" style="margin-top:12px">
+        <button id="audio-off" class="ghost sm" data-i18n="stopAudio">Stop audio</button>
+      </div>
+    </div>
+    <div class="card">
+      <h2 data-i18n="volTitle">🔊 Volume</h2>
+      <label class="fld"><span data-i18n="level">Level</span> <span id="vol-val" class="pill">—</span>
+        <input type="range" id="vol" min="0" max="10" value="5" />
+      </label>
+    </div>
+    <div class="card">
+      <h2 data-i18n="audioTimer">⏱️ Audio timer</h2>
+      <label class="fld"><span data-i18n="duration">Duration</span>
+        <select id="audio-dur">
+          <option value="6">1 min</option><option value="0">15 min</option>
+          <option value="1">30 min</option><option value="2" selected>60 min</option>
+          <option value="3">90 min</option><option value="4">120 min</option>
+          <option value="5">Continuous</option>
+        </select>
+      </label>
+      <button id="audio-dur-set" class="sm primary" style="margin-top:10px" data-i18n="setAudioDur">Set audio duration</button>
+    </div>
+  </section>
+
+  <!-- ============ NAP & CLOCK ============ -->
+  <section class="pane" data-pane="timers">
+    <div class="card">
+      <h2 data-i18n="napTitle">😴 Nap timer</h2>
+      <div class="row">
+        <label class="fld"><span data-i18n="napDur">Nap duration</span>
+          <select id="nap-dur">
+            <option value="1">15 min</option><option value="2">30 min</option>
+            <option value="3">45 min</option><option value="4" selected>60 min</option>
+            <option value="6">90 min</option><option value="8">120 min</option>
+            <option value="10">180 min</option>
+          </select>
+        </label>
+        <button id="nap-start" class="primary" style="align-self:flex-end" data-i18n="startNap">Start nap</button>
+      </div>
+      <label class="fld" style="margin-top:12px"><span data-i18n="napAlarm">Nap wake alarm</span>
+        <select id="nap-alarm">
+          <option value="0">At nap end</option><option value="1">+15 min</option>
+          <option value="2">+30 min</option><option value="4">+60 min</option>
+          <option value="9">Off</option>
+        </select>
+      </label>
+      <button id="nap-alarm-set" class="sm primary" style="margin-top:10px" data-i18n="setNapAlarm">Set nap alarm</button>
+    </div>
+    <div class="card">
+      <h2 data-i18n="r2rTitle">🌅 Ready-to-Rise</h2>
+      <div class="row">
+        <button id="r2r-on" class="sm" data-i18n="r2rOn">Enable R2R</button>
+        <button id="r2r-off" class="sm ghost" data-i18n="r2rOff">Disable R2R</button>
+      </div>
+    </div>
+    <div class="card">
+      <h2 data-i18n="weeklyTitle">🌙 Weekly schedule (Nanna / Sveglia)</h2>
+      <p class="hint" data-i18n="weeklyHint">The self-activating day schedule.</p>
+      <table class="caps" id="ws-table" style="margin-top:10px">
+        <thead><tr><th data-i18n="onDays">Day</th><th data-i18n="napDur">Sleep</th><th data-i18n="startsAt">Wake</th></tr></thead>
+        <tbody id="ws-body"></tbody>
+      </table>
+      <div class="row" style="margin-top:10px">
+        <label class="fld"><span data-i18n="fillSleep">Fill all · Sleep</span><input type="time" id="ws-fill-sleep" value="20:00" /></label>
+        <label class="fld"><span data-i18n="fillWake">Fill all · Wake</span><input type="time" id="ws-fill-wake" value="08:00" /></label>
+        <button id="ws-fill" class="sm" style="align-self:flex-end" data-i18n="applyAll">Apply to all days</button>
+      </div>
+      <label class="fld" style="margin-top:10px"><span data-i18n="alarmSound">Wake alarm sound</span>
+        <select id="ws-alarm"><option value="0">Alarm 1</option><option value="1">Alarm 2</option><option value="2">Alarm 3</option><option value="3" selected>Alarm 4</option></select>
+      </label>
+      <button id="ws-write" class="good" style="margin-top:12px;width:100%" data-needs-conn disabled data-i18n="writeWeekly">🌙 Write weekly schedule to cloud</button>
+    </div>
+    <div class="card">
+      <h2 data-i18n="clockTitle">🕐 Clock / time</h2>
+      <p class="hint" data-i18n="clockHint">Syncs the device clock to your phone/computer's current time.</p>
+      <div class="row" style="margin-top:8px">
+        <button id="clock-sync" class="primary" style="flex:1" data-i18n="syncClock">Sync clock to now</button>
+      </div>
+      <div class="row" style="margin-top:10px">
+        <label class="fld"><span data-i18n="format">Format</span>
+          <select id="clock-fmt"><option value="1">24h</option><option value="0">12h</option></select>
+        </label>
+        <label class="fld"><span data-i18n="clockBright">Clock brightness</span>
+          <select id="clock-br"><option>0</option><option>3</option><option selected>6</option><option>9</option></select>
+        </label>
+      </div>
+      <div class="row" style="margin-top:10px">
+        <button id="clock-on" class="sm" data-i18n="displayOn">Display on</button>
+        <button id="clock-off" class="sm ghost" data-i18n="displayOff">Display off</button>
+      </div>
+    </div>
+    <div class="card">
+      <h2 data-i18n="powerTitle">⏻ Power</h2>
+      <div class="row">
+        <button id="global-on" class="sm good" data-i18n="allOn">All on</button>
+        <button id="global-off" class="sm ghost" data-i18n="allOff">All off</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ STATE ============ -->
+  <section class="pane" data-pane="state">
+    <div class="card">
+      <h2 data-i18n="stateTitle">📊 Live device state</h2>
+      <button id="refresh-state" class="sm primary" data-i18n="refresh">↻ Refresh state</button>
+      <div id="state-dump" style="margin-top:12px"></div>
+    </div>
+    <div class="card">
+      <h2 data-i18n="logTitle">🪵 Log</h2>
+      <div id="log"></div>
+      <button id="log-clear" class="sm ghost" style="margin-top:8px" data-i18n="clearLog">Clear log</button>
+    </div>
+  </section>
+
+  <div id="bar">
+    <span class="status"><span id="dot"></span><span id="status-txt" data-i18n="disconnected">Disconnected</span></span>
+    <button id="connect" class="primary" data-i18n="connect">Connect</button>
+    <button id="disconnect" class="ghost" disabled data-i18n="disconnect">Disconnect</button>
+  </div>
+
+<script type="module">
+/* =========================================================================
+   Lumalou protocol — ported 1:1 from github.com/stramanu/lumalou (MIT),
+   packages/js/src/{crypto,commands,responses,generated}.ts
+   Validated bit-exact against that repo's golden vectors.
+   ========================================================================= */
+
+// ======================= i18n (IT / ES / EN) =======================
+const I18N={
+  it:{
+    sub:'Controllo Bluetooth locale per il Fisher-Price Lumalou (gld09). Nessun cloud, nessun account. Chrome/Edge su desktop o Android, o Bluefy su iOS.',
+    findDevice:'💡 <b>Trovare il dispositivo:</b> nel selettore Bluetooth il Lumalou appare con un <b>nome numerico</b> (es. "1102184718"), <b>non</b> "Lumalou". Attiva il Bluetooth, tieni la nuvoletta vicina, poi Connetti e scegli la voce numerica.',
+    tabRoutine:'Routine della nanna',tabBuilder:'Crea routine',tabLight:'Luce',tabAudio:'Audio',tabTimers:'Nanna e Orologio',tabState:'Stato dispositivo',
+    connect:'Connetti',disconnect:'Disconnetti',disconnected:'Disconnesso',connected:'Connesso · pronto',
+    runRoutine:'🛏️ Avvia la routine della nanna',runRoutineHint:'Attivare la modalità routine e avviarla sono due passaggi. Su questo dispositivo la routine è una <b>modalità</b> in cui il device entra e poi avanza per fasi (Pronto → Calma → Sonno). Potrebbe restare sulla prima fase finché "Completa task" non la fa avanzare.',
+    startRoutine:'▶ Avvia routine della nanna',enableMode:'Attiva modalità',disable:'Disattiva',
+    liveTitle:'🎛️ Controlli dal vivo (mentre la routine è attiva)',prevTask:'⏮ Task precedente',completeTask:'✓ Completa task →',restart:'↻ Riavvia',completeSeq:'⏭ Completa l\'intera sequenza',cancel:'✕ Annulla routine',
+    routineAudio:'🔊 Audio routine',routineVol:'Volume routine',routineMusicOn:'Musica routine ON',routineMusicOff:'Musica routine OFF',
+    builderTitle:'🧩 Crea routine',builderHint:'Crea i passi della routine della nanna e scrivili sulla nuvoletta — stesso formato byte accettato dal dispositivo. Poi attivala dalla scheda Routine (il passaggio che l\'app ufficiale non invia).',
+    nameOpt:'Nome (facoltativo)',startsAt:'Inizia alle',onDays:'Nei giorni',stepsTitle:'📋 Passi',addStep:'➕ Aggiungi un passo',
+    writeTitle:'☁️ Scrivi sulla nuvoletta',writeHint:'Scrive questa routine su ogni giorno selezionato. Solo dati — non avvia la routine. Usa "Avvia routine" nella scheda Routine per attivarla.',
+    saveRoutine:'☁️ Salva routine nei giorni selezionati',clearDays:'Svuota giorni selezionati',
+    readTitle:'🔍 Leggi routine dal dispositivo',readAll:'Leggi tutti e 7 i giorni',
+    weeklyTitle:'🌙 Programma settimanale (Nanna / Sveglia)',weeklyHint:'Il programma giornaliero auto-attivante: orari di nanna e sveglia. Il device rende la nuvoletta verde all\'ora della sveglia, rossa prima. Scrivere riscrive tutti e 7 i giorni. Lascia un orario vuoto per disattivare quel giorno.',
+    fillSleep:'Riempi tutti · Nanna',fillWake:'Riempi tutti · Sveglia',applyAll:'Applica a tutti i giorni',alarmSound:'Suono sveglia',writeWeekly:'🌙 Scrivi programma settimanale',
+    napTitle:'😴 Timer nanna',napDur:'Durata nanna',startNap:'Avvia nanna',napAlarm:'Sveglia fine nanna',setNapAlarm:'Imposta sveglia',
+    r2rTitle:'🌅 Ready-to-Rise',r2rOn:'Attiva R2R',r2rOff:'Disattiva R2R',
+    clockTitle:'🕐 Orologio / ora',clockHint:'Sincronizza l\'orologio del device con l\'ora attuale del telefono/computer.',syncClock:'Sincronizza orologio',format:'Formato',clockBright:'Luminosità orologio',displayOn:'Display acceso',displayOff:'Display spento',
+    powerTitle:'⏻ Alimentazione',allOn:'Accendi tutto',allOff:'Spegni tutto',
+    colorTitle:'💡 Colore',backlightOff:'Spegni retroilluminazione',brightTitle:'🔆 Luminosità',level:'Livello',lightTimer:'⏱️ Timer luce',duration:'Durata',setLightDur:'Imposta durata luce',
+    playTitle:'🎵 Riproduci audio',stopAudio:'Ferma audio',volTitle:'🔊 Volume',audioTimer:'⏱️ Timer audio',setAudioDur:'Imposta durata audio',
+    stateTitle:'📊 Stato dispositivo live',refresh:'↻ Aggiorna stato',logTitle:'🪵 Log',clearLog:'Cancella log',
+    stageTitle:'📍 Fase attuale',opMode:'Modalità operativa',routineModeKv:'Modalità routine',stage:'Fase',alarmExec:'Sveglia in esecuzione',
+  },
+  es:{
+    sub:'Control Bluetooth local para el Fisher-Price Lumalou (gld09). Sin nube, sin cuenta. Chrome/Edge en escritorio o Android, o Bluefy en iOS.',
+    findDevice:'💡 <b>Encontrar tu dispositivo:</b> en el selector Bluetooth el Lumalou aparece con un <b>nombre numérico</b> (ej. "1102184718"), <b>no</b> "Lumalou". Activa el Bluetooth, mantén la nube cerca, luego Conectar y elige la entrada numérica.',
+    tabRoutine:'Rutina de dormir',tabBuilder:'Crear rutina',tabLight:'Luz',tabAudio:'Audio',tabTimers:'Siesta y Reloj',tabState:'Estado del dispositivo',
+    connect:'Conectar',disconnect:'Desconectar',disconnected:'Desconectado',connected:'Conectado · listo',
+    runRoutine:'🛏️ Iniciar la rutina de dormir',runRoutineHint:'Activar el modo rutina e iniciarlo son dos pasos. En este dispositivo la rutina es un <b>modo</b> en el que el aparato entra y luego avanza por fases (Listo → Calma → Sueño). Puede quedarse en la primera fase hasta que "Completar tarea" la haga avanzar.',
+    startRoutine:'▶ Iniciar rutina de dormir',enableMode:'Activar modo',disable:'Desactivar',
+    liveTitle:'🎛️ Controles en vivo (mientras la rutina está activa)',prevTask:'⏮ Tarea anterior',completeTask:'✓ Completar tarea →',restart:'↻ Reiniciar',completeSeq:'⏭ Completar toda la secuencia',cancel:'✕ Cancelar rutina',
+    routineAudio:'🔊 Audio de rutina',routineVol:'Volumen de rutina',routineMusicOn:'Música rutina ON',routineMusicOff:'Música rutina OFF',
+    builderTitle:'🧩 Crear rutina',builderHint:'Crea los pasos de la rutina de dormir y escríbelos en la nube — mismo formato de bytes que acepta el dispositivo. Luego actívala en la pestaña Rutina (el paso que la app oficial no envía).',
+    nameOpt:'Nombre (opcional)',startsAt:'Empieza a las',onDays:'En estos días',stepsTitle:'📋 Pasos',addStep:'➕ Añadir un paso',
+    writeTitle:'☁️ Escribir en la nube',writeHint:'Escribe esta rutina en cada día seleccionado. Solo datos — no inicia la rutina. Usa "Iniciar rutina" en la pestaña Rutina para activarla.',
+    saveRoutine:'☁️ Guardar rutina en los días seleccionados',clearDays:'Vaciar días seleccionados',
+    readTitle:'🔍 Leer rutinas del dispositivo',readAll:'Leer los 7 días',
+    weeklyTitle:'🌙 Horario semanal (Siesta / Despertar)',weeklyHint:'El horario diario autoactivable: horas de dormir y despertar. El dispositivo pone la nube verde a la hora de despertar, roja antes. Escribir reescribe los 7 días. Deja una hora vacía para desactivar ese día.',
+    fillSleep:'Rellenar todos · Dormir',fillWake:'Rellenar todos · Despertar',applyAll:'Aplicar a todos los días',alarmSound:'Sonido de alarma',writeWeekly:'🌙 Escribir horario semanal',
+    napTitle:'😴 Temporizador de siesta',napDur:'Duración de siesta',startNap:'Iniciar siesta',napAlarm:'Alarma fin de siesta',setNapAlarm:'Fijar alarma',
+    r2rTitle:'🌅 Ready-to-Rise',r2rOn:'Activar R2R',r2rOff:'Desactivar R2R',
+    clockTitle:'🕐 Reloj / hora',clockHint:'Sincroniza el reloj del dispositivo con la hora actual del teléfono/ordenador.',syncClock:'Sincronizar reloj',format:'Formato',clockBright:'Brillo del reloj',displayOn:'Pantalla encendida',displayOff:'Pantalla apagada',
+    powerTitle:'⏻ Encendido',allOn:'Encender todo',allOff:'Apagar todo',
+    colorTitle:'💡 Color',backlightOff:'Apagar retroiluminación',brightTitle:'🔆 Brillo',level:'Nivel',lightTimer:'⏱️ Temporizador de luz',duration:'Duración',setLightDur:'Fijar duración de luz',
+    playTitle:'🎵 Reproducir audio',stopAudio:'Detener audio',volTitle:'🔊 Volumen',audioTimer:'⏱️ Temporizador de audio',setAudioDur:'Fijar duración de audio',
+    stateTitle:'📊 Estado del dispositivo en vivo',refresh:'↻ Actualizar estado',logTitle:'🪵 Registro',clearLog:'Borrar registro',
+    stageTitle:'📍 Fase actual',opMode:'Modo operativo',routineModeKv:'Modo rutina',stage:'Fase',alarmExec:'Alarma en ejecución',
+  },
+  en:{
+    sub:'Local Bluetooth control for the Fisher-Price Lumalou (gld09). No cloud, no account. Chrome/Edge on desktop or Android, or Bluefy on iOS.',
+    findDevice:'💡 <b>Finding your device:</b> in the Bluetooth picker the Lumalou shows up with a <b>numeric name</b> (e.g. "1102184718"), <b>not</b> "Lumalou". Turn on Bluetooth, keep the cloud nearby, then Connect and pick the numeric entry.',
+    tabRoutine:'Bedtime Routine',tabBuilder:'Routine Builder',tabLight:'Light',tabAudio:'Audio',tabTimers:'Nap & Clock',tabState:'Device State',
+    connect:'Connect',disconnect:'Disconnect',disconnected:'Disconnected',connected:'Connected · ready',
+    runRoutine:'🛏️ Run the bedtime routine',runRoutineHint:'Enabling routine mode and starting it are two steps. On this device the routine is a <b>mode</b> the device enters and then advances through stages (Ready → Settle → Sleep) — it may sit on the first stage until "Complete task" drives it forward.',
+    startRoutine:'▶ Start bedtime routine',enableMode:'Enable mode',disable:'Disable',
+    liveTitle:'🎛️ Live controls (while routine is running)',prevTask:'⏮ Previous task',completeTask:'✓ Complete task →',restart:'↻ Restart',completeSeq:'⏭ Complete whole sequence',cancel:'✕ Cancel routine',
+    routineAudio:'🔊 Routine audio',routineVol:'Routine volume',routineMusicOn:'Routine music On',routineMusicOff:'Routine music Off',
+    builderTitle:'🧩 Routine builder',builderHint:'Build the bedtime routine\'s steps and write them to the cloud — same byte format the device accepts. Then activate it from the Bedtime Routine tab (the step the official app never sends).',
+    nameOpt:'Name (optional)',startsAt:'Starts at',onDays:'On these days',stepsTitle:'📋 Steps',addStep:'➕ Add a step',
+    writeTitle:'☁️ Write to cloud',writeHint:'Writes this routine to each selected day. This is data only — it does not start the routine. Use "Start bedtime routine" on the Bedtime Routine tab to activate.',
+    saveRoutine:'☁️ Save routine to selected days',clearDays:'Clear selected days',
+    readTitle:'🔍 Read routines from device',readAll:'Read all 7 days',
+    weeklyTitle:'🌙 Weekly schedule (Sleep / Wake)',weeklyHint:'The self-activating day schedule: sleep and wake times. The device turns the cloud green at wake time, red before. Writing rewrites all 7 days at once. Leave a time empty to disable that day.',
+    fillSleep:'Fill all · Sleep',fillWake:'Fill all · Wake',applyAll:'Apply to all days',alarmSound:'Wake alarm sound',writeWeekly:'🌙 Write weekly schedule to cloud',
+    napTitle:'😴 Nap timer',napDur:'Nap duration',startNap:'Start nap',napAlarm:'Nap wake alarm',setNapAlarm:'Set nap alarm',
+    r2rTitle:'🌅 Ready-to-Rise',r2rOn:'Enable R2R',r2rOff:'Disable R2R',
+    clockTitle:'🕐 Clock / time',clockHint:'Syncs the device clock to your phone/computer\'s current time.',syncClock:'Sync clock to now',format:'Format',clockBright:'Clock brightness',displayOn:'Display on',displayOff:'Display off',
+    powerTitle:'⏻ Power',allOn:'All on',allOff:'All off',
+    colorTitle:'💡 Color',backlightOff:'Turn off cloud backlight',brightTitle:'🔆 Brightness',level:'Level',lightTimer:'⏱️ Light timer',duration:'Duration',setLightDur:'Set light duration',
+    playTitle:'🎵 Play audio',stopAudio:'Stop audio',volTitle:'🔊 Volume',audioTimer:'⏱️ Audio timer',setAudioDur:'Set audio duration',
+    stateTitle:'📊 Live device state',refresh:'↻ Refresh state',logTitle:'🪵 Log',clearLog:'Clear log',
+    stageTitle:'📍 Current stage',opMode:'Operation mode',routineModeKv:'Routine mode',stage:'Stage',alarmExec:'Alarm executing',
+  },
+};
+let LANG=(localStorage.getItem("lumalou-lang")||(navigator.language||"en").slice(0,2).toLowerCase());
+if(!I18N[LANG])LANG="en";
+const T=k=>(I18N[LANG]&&I18N[LANG][k])??I18N.en[k]??k;
+function applyLang(){
+  document.documentElement.lang=LANG;
+  document.querySelectorAll("[data-i18n]").forEach(el=>{el.innerHTML=T(el.getAttribute("data-i18n"));});
+  document.querySelectorAll("[data-lang]").forEach(b=>b.classList.toggle("sel",b.dataset.lang===LANG));
+}
+
+// ---------- generated: GATT + opcodes + enums ----------
+const GATT = {
+  service: "4cea0001-c678-4202-b5d3-712dbb5e5b14",
+  tx: "4cea0002-c678-4202-b5d3-712dbb5e5b14",
+  rx: "4cea0003-c678-4202-b5d3-712dbb5e5b14",
+  factory: "4cea0004-c678-4202-b5d3-712dbb5e5b14",
+  session: "4cea0005-c678-4202-b5d3-712dbb5e5b14",
+  dfu: "00001530-1212-efde-1523-785feabcd123", // NEVER write
+};
+const C = {
+  SET_GLOBAL_STATE:1, SET_GLOBAL_ON:3, SET_CURRENT_DATE:48, REQUEST_CURRENT_DATE:49,
+  SET_VOLUME:55, TURN_OFF_AUDIO:56, REQUEST_VOLUME:57, SET_LED_BRIGHTNESS:58,
+  REQUEST_LED_BRIGHTNESS:59, SET_LIGHT_COLOR:60, REQUEST_LIGHT_COLOR:61, TURN_OFF_CLOUD_BACKLIGHT:62,
+  PLAY_AUDIO:63, SET_MUSIC_PLAYLIST:64, SET_PLAYLIST_DURATION:66, SET_R2R_STATUS:68,
+  START_NAP_TIME:77, SET_NAP_TIME_ALARM:79, REQUEST_GLOBAL_STATE:83, REQUEST_SONG_PLAYING:85,
+  SET_ROUTINE_MODE_STATUS:88, REQUEST_ROUTINE_MODE_STATUS:89, SET_ROUTINE_TASK_STATUS:104,
+  SET_ROUTINE_MUSIC_STATUS:105, ROUTINE_CONTROL_COMMAND:107, SET_SOOTHER_MODE_LIGHT_DURATION:108,
+  REQUEST_OPERATION_MODE:114, REQUEST_CURRENT_STAGE:117, SET_ROUTINE_MODE_VOLUME:119,
+  SET_CLOCK_SETTINGS:121, START_ROUTINE_MODE:123,
+};
+const DAY_ROUTINE = {
+  SET:    { sunday:90, monday:92, tuesday:94, wednesday:96, thursday:98, friday:100, saturday:102 },
+  REQUEST:{ sunday:91, monday:93, tuesday:95, wednesday:97, thursday:99, friday:101, saturday:103 },
+};
+const DAYS = ["sunday","monday","tuesday","wednesday","thursday","friday","saturday"];
+const RESPONSES = {2:"GLOBAL_STATE",19:"CURRENT_DATE",20:"CURRENT_SONG",21:"CURRENT_VOLUME",
+  22:"LIGHT_STATUS",23:"LIGHT_BRIGHTNESS",24:"LIGHT_COLOR",30:"OPERATION_MODE",32:"CURRENT_STAGE",
+  33:"R2R_STATUS",43:"SUNDAY_ROUTINE",44:"MONDAY_ROUTINE",45:"TUESDAY_ROUTINE",46:"WEDNESDAY_ROUTINE",
+  47:"THURSDAY_ROUTINE",144:"FRIDAY_ROUTINE",145:"SATURDAY_ROUTINE",146:"ROUTINE_MODE_STATUS",
+  147:"ROUTINE_MUSIC_STATUS",148:"ROUTINE_TASK_STATUS",149:"LIGHT_DURATION",152:"ROUTINE_VOLUME_LEVEL",
+  153:"CLOCK_SETTINGS"};
+const ROUTINE_RESP_DAY = {43:"sunday",44:"monday",45:"tuesday",46:"wednesday",47:"thursday",144:"friday",145:"saturday"};
+const Color = { WARM:0,RED:1,YELLOW:2,ORANGE:3,GREEN:4,BLUE:5,PURPLE:6,NIGHT_LIGHT:7,COOL:8,RAINBOW:9 };
+const Audio = { SLEEP_PLAYLIST:0,CUSTOM_PLAYLIST:1,PINK_NOISE:2,OCEAN:3,RAIN:4,BROWN_NOISE:5,NATURE:6,HIGHWAY:7 };
+const RoutineControl = { COMPLETE_TASK:0,PREV_TASK:1,RESTART_SEQUENCE:2,COMPLETE_SEQUENCE:3,CANCEL:4 };
+const OperationMode = {0:"Soother",2:"Daytime Awake",3:"Sleepy Time",4:"Pairing",5:"Firmware Update",6:"Nap Time",7:"Routine"};
+const Stage = {0:"None",1:"Ready",2:"Settle",3:"Sleep"};
+
+// ---------- crypto.ts port ----------
+const concat = (...a) => { const n=a.reduce((s,x)=>s+x.length,0),o=new Uint8Array(n); let p=0; for(const x of a){o.set(x,p);p+=x.length;} return o; };
+const hex = u => [...u].map(b=>b.toString(16).padStart(2,"0")).join("");
+const CRC8 = (()=>{const t=[];for(let i=0;i<256;i++){let c=i;for(let k=0;k<8;k++)c=c&0x80?((c<<1)^0x07)&0xff:(c<<1)&0xff;t.push(c);}return t;})();
+function crc8(d,init=0xff){let c=init;for(const b of d)c=CRC8[(b^c)&0xff];return c;}
+async function aesCtr(key16,iv16,data){const k=await crypto.subtle.importKey("raw",key16,{name:"AES-CTR"},false,["encrypt"]);
+  return new Uint8Array(await crypto.subtle.encrypt({name:"AES-CTR",counter:iv16,length:128},k,data));}
+const Pp=0xffffffff00000001000000000000000000000000ffffffffffffffffffffffffn;
+const Aa=Pp-3n, Bb=0x5ac635d8aa3a93e7b3ebbd55769886bc651d06b0cc53b0f63bce3c3e27d2604bn;
+function modpow(b,e,m){let r=1n;b%=m;while(e>0n){if(e&1n)r=(r*b)%m;e>>=1n;b=(b*b)%m;}return r;}
+const b2big=u=>{let x=0n;for(const b of u)x=(x<<8n)|BigInt(b);return x;};
+const big2b=(x,l)=>{const o=new Uint8Array(l);for(let i=l-1;i>=0;i--){o[i]=Number(x&0xffn);x>>=8n;}return o;};
+function decompressPoint(c){const x=b2big(c.slice(1));const yy=((((x*x)%Pp)*x)%Pp+(Aa*x)%Pp+Bb)%Pp;
+  let y=modpow(yy,(Pp+1n)/4n,Pp);if((y&1n)!==BigInt(c[0]&1))y=Pp-y;return concat(new Uint8Array([4]),big2b(x,32),big2b(y,32));}
+function compressPoint(u){return concat(new Uint8Array([0x02|(u[64]&1)]),u.slice(1,33));}
+async function deriveSessionKey(priv,devComp){const dev=decompressPoint(devComp);
+  const dk=await crypto.subtle.importKey("raw",dev,{name:"ECDH",namedCurve:"P-256"},false,[]);
+  let sh=new Uint8Array(await crypto.subtle.deriveBits({name:"ECDH",public:dk},priv,256));
+  for(let c=0;c<100;c++){const iv=new Uint8Array([0,0,0,0,0,0,0,c,0,0x6d,0x61,0x74,0x74,0x65,0x6c,0]);sh=await aesCtr(sh.slice(0,16),iv,sh);}
+  return sh;}
+async function makeEphemeral(){const kp=await crypto.subtle.generateKey({name:"ECDH",namedCurve:"P-256"},false,["deriveBits"]);
+  const pub=new Uint8Array(await crypto.subtle.exportKey("raw",kp.publicKey));
+  return {privKey:kp.privateKey,pubComp:compressPoint(pub),nonce:crypto.getRandomValues(new Uint8Array(4))};}
+function composeRequest(app){let xor=app.length&0xff;for(const b of app)xor^=b;return concat(new Uint8Array([0xfe,app.length&0xff]),app,new Uint8Array([xor&0xff]));}
+function ssi0Wrap(fe,addr=0){return concat(new Uint8Array([0x01,((1<<4)&0xf0)|(addr&0x0f)]),fe);}
+function encodeCommand(app){return ssi0Wrap(composeRequest(app));}
+const be32=n=>new Uint8Array([(n>>>24)&255,(n>>>16)&255,(n>>>8)&255,n&255]);
+const be16=n=>new Uint8Array([(n>>>8)&255,n&255]);
+const ivOf=(seq,a4,b4)=>concat(be32(seq),a4,b4,new Uint8Array(4));
+async function buildTxFrame(pt,seq,key16,nonce4,salt4){
+  const h0=concat(new Uint8Array([0x7e]),be32(seq),be16(pt.length+1));
+  const header=concat(h0,new Uint8Array([crc8(h0)]));
+  const body=concat(pt,new Uint8Array([crc8(pt)]));
+  return concat(header,await aesCtr(key16,ivOf(seq,nonce4,salt4),body));}
+async function decryptRxFrame(f,key16,nonce4,salt4){
+  if(f.length<9||f[0]!==0x7e)return null;
+  const seq=((f[1]<<24)|(f[2]<<16)|(f[3]<<8)|f[4])>>>0;
+  const dec=await aesCtr(key16,ivOf(seq,salt4,nonce4),f.slice(8));
+  const pt=dec.slice(0,-1);
+  return {seq,plaintext:pt,crcOk:crc8(pt)===dec[dec.length-1]};}
+
+// ---------- commands.ts port ----------
+const u8=(...a)=>new Uint8Array(a);
+const bcd=n=>n==null?0xff:(((Math.floor(n/10)<<4)|(n%10))&0xff);
+function reduceLowNibbles(vals){let v=vals.slice();if(v.length%2)v=[0,...v];const o=new Uint8Array(v.length/2);
+  for(let i=0;i<v.length;i+=2)o[i/2]=((v[i]<<4)|(v[i+1]&0x0f))&0xff;return o;}
+const cmd={
+  setLightColor:c=>u8(C.SET_LIGHT_COLOR,c),
+  setBrightness:l=>u8(C.SET_LED_BRIGHTNESS,l&0xff),
+  setLightDuration:d=>u8(C.SET_SOOTHER_MODE_LIGHT_DURATION,d),
+  turnOffBacklight:()=>u8(C.TURN_OFF_CLOUD_BACKLIGHT),
+  playAudio:a=>u8(C.PLAY_AUDIO,a),
+  turnOffAudio:()=>u8(C.TURN_OFF_AUDIO),
+  setPlaylistDuration:d=>u8(C.SET_PLAYLIST_DURATION,d),
+  setVolume:l=>u8(C.SET_VOLUME,l&0xff),
+  setRoutineVolume:l=>u8(C.SET_ROUTINE_MODE_VOLUME,l&0xff),
+  setRoutineMusic:on=>u8(C.SET_ROUTINE_MUSIC_STATUS,on?1:0),
+  setGlobalOn:on=>u8(C.SET_GLOBAL_ON,on?1:0),
+  setCurrentDate:(h,m,s,wd)=>u8(C.SET_CURRENT_DATE,bcd(h),bcd(m),bcd(s),bcd(wd)),
+  setClockSettings:(disp,br,fmt)=>new Uint8Array([C.SET_CLOCK_SETTINGS,...reduceLowNibbles([0,disp?1:0,br&0x0f,fmt])]),
+  setR2RStatus:on=>u8(C.SET_R2R_STATUS,on?1:0),
+  // Weekly schedule — decoded byte-exact from device captures.
+  //   SET_R2R_TIMES(70)/SET_SLEEPY_TIMES(72): 7×[bcdHour,bcdMinute], Sunday first; null day -> 0xFF 0xFF.
+  //   SET_R2R_ALARMS(74): 7×alarm bytes + 1 sfx byte (observed 00 00 00 <sfx>).
+  _weeklyTimes(op,times){const b=[op];for(const t of times){if(!t)b.push(0xff,0xff);else b.push(bcd(t[0]),bcd(t[1]));}return new Uint8Array(b);},
+  setR2RTimes(times){return this._weeklyTimes(70,times);},     // wake / "Sveglia"
+  setSleepyTimes(times){return this._weeklyTimes(72,times);},  // nap / "Nanna"
+  setR2RAlarms(sfx){return new Uint8Array([74,0,0,0,sfx&0xff]);}, // observed: 00 00 00 <sfx>
+  startNap:d=>u8(C.START_NAP_TIME,d),
+  setNapAlarm:a=>u8(C.SET_NAP_TIME_ALARM,a),
+  setRoutineStatus:on=>u8(C.SET_ROUTINE_MODE_STATUS,on?1:0),
+  startRoutineMode:()=>u8(C.START_ROUTINE_MODE),
+  routineControl:c=>u8(C.ROUTINE_CONTROL_COMMAND,c),
+  requestGlobalState:()=>u8(C.REQUEST_GLOBAL_STATE),
+  requestDayRoutine:day=>u8(DAY_ROUTINE.REQUEST[day]),
+  // Per-day routine write — decoded byte-exact from device captures:
+  //   [SET_<day>, bcdHour, bcdMinute, (step<<4|taskId) per task...]
+  //   time=null -> 0xFF 0xFF sentinel (empty day). steps = [[taskId,...] per step].
+  setDayRoutine(day,time,steps){
+    const head=[DAY_ROUTINE.SET[day]];
+    if(!time){head.push(0xff,0xff);}
+    else{head.push(bcd(time[0]),bcd(time[1]));}
+    const taskBytes=[];
+    steps.forEach((tasks,stepIdx)=>{
+      for(const t of tasks) taskBytes.push((((stepIdx+1)<<4)&0xf0)|(t&0x0f));
+    });
+    // Zero-pad to the full 12-slot task buffer so no stale tail bytes remain on the
+    // device (observed: short writes leave junk from a previous longer routine).
+    while(taskBytes.length<MAX_TASK_BYTES) taskBytes.push(0x00);
+    return new Uint8Array([...head,...taskBytes]);
+  },
+};
+// Task-ID map, decoded from real device routine captures.
+const TASKS=[
+  [0,"(none)"],[1,"Get dressed"],[2,"Wash"],[3,"Brush teeth"],[4,"Toilet"],
+  [5,"Backpack"],[6,"Meal"],[7,"Story"],[8,"Tidy up"],[9,"Heart"],[10,"Spiral"],[11,"Star"],
+];
+const TASK_LABEL=Object.fromEntries(TASKS.map(([id,l])=>[id,l]));
+const MAX_TASK_BYTES=12; // device accepts up to 12 task bytes after the 2 time bytes
+const ENABLE_RX=u8(0x01,0x50,0x01);
+
+// ---------- responses.ts port ----------
+const nibbles=d=>{const o=[];for(const b of d)o.push(b>>4,b&0x0f);return o;};
+function parseGlobalState(a){const n=nibbles(a);while(n.length<26)n.push(0);return{
+  operationMode:n[0],activityState:n[1],musicStatus:n[2],currentSong:(n[3]<<4)|n[4],currentVolume:n[5],
+  playlistDuration:n[6],lightStatus:n[7],lightBrightness:n[8],lightColor:n[9],napTimeStatus:n[10],
+  napDuration:n[11],ready2RiseStatus:n[12],ready2RiseAlarmStatus:n[13],timePrescaler:n[14],currentStage:n[15],
+  clockDisplay:n[16],clockBrightness:n[17],clockFormat:n[18],routineMusicStatus:n[19],taskRewardSfx:n[20],
+  routineRewardSfx:n[21],lightDuration:n[22],routineVolume:n[23],routineModeStatus:n[24],alarmExecuting:n[25]};}
+function parseResponsePayload(pt){let d=pt;if(d.length>=2&&(d[0]===0x01||d[0]===0x02))d=d.slice(2);
+  const fe=d.indexOf(0xfe);if(fe>=0&&d.length>=fe+3){d=d.slice(fe);const len=d[1];const body=d.slice(2,2+len);
+  return{ok:true,opcode:body[0],args:body.slice(1)};}return{ok:false};}
+
+/* ================================ CLIENT ================================= */
+class LumalouClient{
+  constructor(h){this.h=h;this.connected=false;this.seq=1;this.queue=Promise.resolve();}
+  static isSupported(){return typeof navigator!=="undefined"&&"bluetooth"in navigator&&!!navigator.bluetooth?.requestDevice&&(typeof window==="undefined"||window.isSecureContext);}
+  async connect(){
+    if(!LumalouClient.isSupported())throw new Error("Web Bluetooth not available. Use Chrome/Edge on desktop or Android, or Bluefy on iOS, over https/localhost.");
+    this.h.status("pick the numeric device (e.g. 1102184718)…","busy");
+    this.device=await navigator.bluetooth.requestDevice({acceptAllDevices:true,optionalServices:[GATT.service]});
+    this.device.addEventListener("gattserverdisconnected",()=>{this.connected=false;this.h.status(T("disconnected"),"off");this.h.onConn(false);});
+    // Resilient GATT connect: the link often drops right after connect() resolves
+    // (device still settling, or Chrome races the service lookup). Retry a few times.
+    let server, lastErr;
+    for(let attempt=1;attempt<=5;attempt++){
+      try{
+        this.h.status(`connecting… (try ${attempt}/5)`,"busy");
+        server=await this.device.gatt.connect();
+        await sleep(600);                       // let the link settle before touching services
+        if(!server.connected) throw new Error("link dropped after connect");
+        const svcTest=await server.getPrimaryService(GATT.service); // throws if not ready
+        this.h.log(`GATT connected on attempt ${attempt}`);
+        this._svc=svcTest;
+        break;
+      }catch(e){
+        lastErr=e; this.h.log(`connect attempt ${attempt} failed: ${e.message||e}`);
+        try{this.device.gatt.disconnect();}catch{}
+        await sleep(800);
+      }
+    }
+    if(!this._svc) throw new Error("Couldn't hold a stable Bluetooth link after 5 tries. Keep the cloud within ~1m, make sure no other app/tab (e.g. the official site) is connected to it, then retry. ("+(lastErr?.message||lastErr)+")");
+    const svc=this._svc;
+    this.tx=await svc.getCharacteristic(GATT.tx);
+    this.session=await svc.getCharacteristic(GATT.session);
+    const rx=await svc.getCharacteristic(GATT.rx);
+    const factory=await svc.getCharacteristic(GATT.factory);
+    await rx.startNotifications();
+    rx.addEventListener("characteristicvaluechanged",e=>this.onRx(new Uint8Array(e.target.value.buffer)));
+    this.h.status("handshake…","busy");
+    const token=new Uint8Array((await factory.readValue()).buffer);
+    this.salt=token.slice(token.length-4);
+    const devPub=token.slice(25,58);
+    const eph=await makeEphemeral();
+    this.nonce=eph.nonce;
+    this.key=(await deriveSessionKey(eph.privKey,devPub)).slice(0,16);
+    await this.session.writeValueWithResponse(concat(eph.pubComp,eph.nonce));
+    await sleep(400);
+    await this.writeRaw(ENABLE_RX);
+    await sleep(300);
+    this.connected=true;
+    this.h.status(T("connected"),"on");
+    this.h.onConn(true);
+    this.h.log("handshake complete, session key derived locally");
+    await this.requestState();
+  }
+  async disconnect(){this.connected=false;try{this.device?.gatt?.disconnect();}catch{}}
+  writeRaw(pt){
+    this.queue=this.queue.then(async()=>{
+      if(!this.device?.gatt?.connected||!this.tx)return;
+      const frame=await buildTxFrame(pt,this.seq++,this.key,this.nonce,this.salt);
+      try{await this.tx.writeValueWithoutResponse(frame);}catch(e){this.h.log("tx error: "+e);}
+      await sleep(160);
+    });
+    return this.queue;
+  }
+  send(appData){this.h.log("→ "+hex(appData));return this.writeRaw(encodeCommand(appData));}
+  requestState(){return this.send(cmd.requestGlobalState());}
+  async onRx(frame){
+    const res=await decryptRxFrame(frame,this.key,this.nonce,this.salt);
+    if(!res||!res.crcOk)return;
+    const r=parseResponsePayload(res.plaintext);
+    if(!r.ok)return;
+    this.h.log("← "+(RESPONSES[r.opcode]||("0x"+r.opcode.toString(16)))+"  "+hex(r.args));
+    if(r.opcode===0x02&&r.args){const s=parseGlobalState(r.args);this.h.onState(s);
+      if(this._stateWaiter){const w=this._stateWaiter;this._stateWaiter=null;w(s);}}
+    if(ROUTINE_RESP_DAY[r.opcode])this.h.onDayRoutine(ROUTINE_RESP_DAY[r.opcode],r.opcode,r.args);
+  }
+  /** Request GLOBAL_STATE and resolve with the parsed snapshot (or null on timeout). */
+  async snapshotState(timeoutMs=1500){
+    const p=new Promise(res=>{this._stateWaiter=res;});
+    await this.send(cmd.requestGlobalState());
+    return Promise.race([p,sleep(timeoutMs).then(()=>null)]);
+  }
+}
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+
+/* ================================ UI ===================================== */
+const $=s=>document.querySelector(s);
+const $$=s=>[...document.querySelectorAll(s)];
+const dot=$("#dot"), statusTxt=$("#status-txt"), logEl=$("#log");
+let client=null;
+
+const handlers={
+  status(txt,cls){statusTxt.textContent=txt;dot.className=cls||"";},
+  log(m){const t=new Date().toLocaleTimeString();logEl.textContent+=`[${t}] ${m}\n`;logEl.scrollTop=logEl.scrollHeight;},
+  onConn(on){
+    $("#connect").disabled=on;$("#disconnect").disabled=!on;
+    $$("button[data-needs-conn]").forEach(b=>b.disabled=!on);
+  },
+  onState(s){renderState(s);},
+  onDayRoutine(day,opcode,args){recordCapture(day,opcode,args);},
+};
+
+// tabs
+$$(".tab").forEach(t=>t.addEventListener("click",()=>{
+  $$(".tab").forEach(x=>x.classList.remove("active"));
+  $$(".pane").forEach(x=>x.classList.remove("active"));
+  t.classList.add("active");
+  $(`.pane[data-pane="${t.dataset.pane}"]`).classList.add("active");
+}));
+
+// connect
+$("#connect").addEventListener("click",async()=>{
+  client=new LumalouClient(handlers);
+  try{await client.connect();}catch(e){handlers.status(T("disconnected"),"off");handlers.log("connect failed: "+e.message);alert(e.message);}
+});
+$("#disconnect").addEventListener("click",()=>client?.disconnect());
+$("#log-clear").addEventListener("click",()=>logEl.textContent="");
+
+const need=()=>{if(!client?.connected){alert("Connect to the Lumalou first.");return false;}return true;};
+const send=app=>{if(need())client.send(app);};
+
+// ---- Bedtime routine ----
+$("#r-start").addEventListener("click",async()=>{if(!need())return;
+  // Full activation sequence — the part the official app never sends.
+  handlers.log("routine: SET_ROUTINE_MODE_STATUS(on)");
+  await client.send(cmd.setRoutineStatus(true));await sleep(500);
+  handlers.log("routine: START_ROUTINE_MODE");
+  await client.send(cmd.startRoutineMode());await sleep(800);
+  const s=await client.snapshotState();
+  if(s&&s.operationMode===7)handlers.log("✅ device entered ROUTINE mode (7), stage="+(Stage[s.currentStage]??s.currentStage));
+  else handlers.log("⚠️ device did not report ROUTINE mode (mode="+(s?s.operationMode:"?")+"). If nothing happened, the routine may need to be written first (Routine Builder tab).");});
+$("#r-enable").addEventListener("click",()=>send(cmd.setRoutineStatus(true)));
+$("#r-disable").addEventListener("click",()=>send(cmd.setRoutineStatus(false)));
+
+// ---- Routine diagnostic probe ----
+const fmtState=s=>s?`mode=${OperationMode[s.operationMode]??s.operationMode}(${s.operationMode}) · routineStatus=${s.routineModeStatus} · stage=${Stage[s.currentStage]??s.currentStage}(${s.currentStage}) · routineMusic=${s.routineMusicStatus} · alarm=${s.alarmExecuting}`:"(no response)";
+$("#r-probe").addEventListener("click",async()=>{if(!need())return;
+  const out=$("#probe-out");const steps=[];
+  const snap=async label=>{const s=await client.snapshotState();const line=`${label}: ${fmtState(s)}`;steps.push(line);handlers.log("PROBE "+line);return s;};
+  out.innerHTML='<p class="hint">Probing… watch the Log tab.</p>';
+  handlers.log("=== ROUTINE PROBE START ===");
+  const before=await snap("0 before");
+  await client.send(cmd.setRoutineStatus(true));await sleep(500);
+  await snap("1 after SET_ROUTINE_MODE_STATUS(on)");
+  await client.send(cmd.startRoutineMode());await sleep(900);
+  const afterStart=await snap("2 after START_ROUTINE_MODE");
+  await client.send(cmd.routineControl(RoutineControl.COMPLETE_TASK));await sleep(900);
+  await snap("3 after ROUTINE_CONTROL(COMPLETE_TASK)");
+  handlers.log("=== ROUTINE PROBE END ===");
+  // verdict
+  let verdict;
+  if(!afterStart){verdict="⚠️ Device didn't return state after start — try again, keep the cloud close.";}
+  else if(afterStart.operationMode===7){verdict="✅ Device DID enter ROUTINE mode (operationMode=7). The routine is running; it likely advances by stage — use Complete task to step Ready→Settle→Sleep.";}
+  else if(before&&before.operationMode===6){verdict="⛔ Device was in NAPTIME mode (6) — a nap may block routine entry. Cancel nap / return to idle, then retry.";}
+  else{verdict=`❌ Device did NOT switch to ROUTINE mode (stayed in mode ${afterStart.operationMode}). START_ROUTINE_MODE alone isn't entering the mode — the routine probably needs a precondition (configured per-day routine, or a reset to Soother first). The step-by-step log pins which command is ignored.`;}
+  out.innerHTML=`<div class="kv"><b>Verdict</b><span>${verdict}</span></div>`+
+    steps.map(l=>`<div class="hint" style="font-family:ui-monospace,monospace">${l}</div>`).join("");
+});
+$("#rc-prev").addEventListener("click",()=>send(cmd.routineControl(RoutineControl.PREV_TASK)));
+$("#rc-complete").addEventListener("click",()=>send(cmd.routineControl(RoutineControl.COMPLETE_TASK)));
+$("#rc-restart").addEventListener("click",()=>send(cmd.routineControl(RoutineControl.RESTART_SEQUENCE)));
+$("#rc-finish").addEventListener("click",()=>send(cmd.routineControl(RoutineControl.COMPLETE_SEQUENCE)));
+$("#rc-cancel").addEventListener("click",()=>send(cmd.routineControl(RoutineControl.CANCEL)));
+const rv=$("#rv");rv.addEventListener("input",()=>$("#rv-val").textContent=rv.value);
+rv.addEventListener("change",()=>send(cmd.setRoutineVolume(+rv.value)));
+$("#rm-on").addEventListener("click",()=>send(cmd.setRoutineMusic(true)));
+$("#rm-off").addEventListener("click",()=>send(cmd.setRoutineMusic(false)));
+
+// ---- Light ----
+const COLORS=[["Warm","#ffd9a0",0],["Red","#ff5a5a",1],["Yellow","#ffe14d",2],["Orange","#ff9c3f",3],
+  ["Green","#5ad67d",4],["Blue","#5aa6ff",5],["Purple","#b17dff",6],["Night","#2a3570",7],
+  ["Cool","#dff2ff",8],["Rainbow","linear-gradient(135deg,#ff5a5a,#ffe14d,#5ad67d,#5aa6ff,#b17dff)",9]];
+const colorsEl=$("#colors");
+COLORS.forEach(([name,bg,val])=>{const d=document.createElement("div");d.className="swatch";
+  d.style.background=bg;d.textContent=name;d.title=name;
+  d.addEventListener("click",()=>{$$("#colors .swatch").forEach(s=>s.classList.remove("sel"));d.classList.add("sel");send(cmd.setLightColor(val));});
+  colorsEl.appendChild(d);});
+const br=$("#br");br.addEventListener("input",()=>$("#br-val").textContent=br.value);
+br.addEventListener("change",()=>send(cmd.setBrightness(+br.value)));
+$("#light-off").addEventListener("click",()=>send(cmd.turnOffBacklight()));
+$("#light-dur-set").addEventListener("click",()=>send(cmd.setLightDuration(+$("#light-dur").value)));
+
+// ---- Audio ----
+const AUDIO=[["🎶 Sleep playlist",0],["🎵 Custom playlist",1],["💨 Pink noise",2],["🌊 Ocean",3],
+  ["🌧️ Rain",4],["🟤 Brown noise",5],["🌿 Nature",6],["🛣️ Highway",7]];
+const ag=$("#audio-grid");
+AUDIO.forEach(([name,val])=>{const b=document.createElement("button");b.className="sm";b.textContent=name;
+  b.addEventListener("click",()=>send(cmd.playAudio(val)));ag.appendChild(b);});
+$("#audio-off").addEventListener("click",()=>send(cmd.turnOffAudio()));
+const vol=$("#vol");vol.addEventListener("input",()=>$("#vol-val").textContent=vol.value);
+vol.addEventListener("change",()=>send(cmd.setVolume(+vol.value)));
+$("#audio-dur-set").addEventListener("click",()=>send(cmd.setPlaylistDuration(+$("#audio-dur").value)));
+
+// ---- Nap & clock ----
+$("#nap-start").addEventListener("click",()=>send(cmd.startNap(+$("#nap-dur").value)));
+$("#nap-alarm-set").addEventListener("click",()=>send(cmd.setNapAlarm(+$("#nap-alarm").value)));
+$("#r2r-on").addEventListener("click",()=>send(cmd.setR2RStatus(true)));
+$("#r2r-off").addEventListener("click",()=>send(cmd.setR2RStatus(false)));
+$("#clock-sync").addEventListener("click",()=>{const d=new Date();
+  send(cmd.setCurrentDate(d.getHours(),d.getMinutes(),d.getSeconds(),d.getDay()));handlers.log("clock synced to "+d.toLocaleTimeString());});
+const applyClock=()=>send(cmd.setClockSettings($("#clock-disp-on")?.checked??true,+$("#clock-br").value,+$("#clock-fmt").value));
+$("#clock-on").addEventListener("click",()=>send(cmd.setClockSettings(true,+$("#clock-br").value,+$("#clock-fmt").value)));
+$("#clock-off").addEventListener("click",()=>send(cmd.setClockSettings(false,+$("#clock-br").value,+$("#clock-fmt").value)));
+$("#global-on").addEventListener("click",()=>send(cmd.setGlobalOn(true)));
+$("#global-off").addEventListener("click",()=>send(cmd.setGlobalOn(false)));
+
+// ======================= ROUTINE BUILDER =======================
+const rbState={ days:new Set(["thursday"]), steps:[[1]] }; // default: one step, "Get dressed"
+
+// day selector
+const rbDays=$("#rb-days");
+const DAY_SHORT={sunday:"Sun",monday:"Mon",tuesday:"Tue",wednesday:"Wed",thursday:"Thu",friday:"Fri",saturday:"Sat"};
+DAYS.forEach(d=>{const b=document.createElement("button");b.textContent=DAY_SHORT[d];b.dataset.day=d;
+  if(rbState.days.has(d))b.classList.add("sel");
+  b.addEventListener("click",()=>{if(rbState.days.has(d)){rbState.days.delete(d);b.classList.remove("sel");}else{rbState.days.add(d);b.classList.add("sel");}renderPreview();});
+  rbDays.appendChild(b);});
+
+// steps editor
+function renderSteps(){
+  const host=$("#rb-steps");host.innerHTML="";
+  rbState.steps.forEach((tasks,i)=>{
+    const taskId=tasks[0]??0;
+    const row=document.createElement("div");row.className="row";row.style.marginBottom="8px";
+    const sel=document.createElement("select");sel.style.flex="1";
+    TASKS.filter(([id])=>id!==0).forEach(([id,label])=>{const o=document.createElement("option");o.value=id;o.textContent=`${id} · ${label}`;if(id===taskId)o.selected=true;sel.appendChild(o);});
+    sel.addEventListener("change",()=>{rbState.steps[i]=[+sel.value];renderPreview();});
+    const up=document.createElement("button");up.className="sm";up.textContent="▲";up.title="Move up";up.disabled=i===0;
+    up.addEventListener("click",()=>{[rbState.steps[i-1],rbState.steps[i]]=[rbState.steps[i],rbState.steps[i-1]];renderSteps();renderPreview();});
+    const dn=document.createElement("button");dn.className="sm";dn.textContent="▼";dn.title="Move down";dn.disabled=i===rbState.steps.length-1;
+    dn.addEventListener("click",()=>{[rbState.steps[i+1],rbState.steps[i]]=[rbState.steps[i],rbState.steps[i+1]];renderSteps();renderPreview();});
+    const rm=document.createElement("button");rm.className="sm ghost";rm.textContent="✕";rm.title="Remove";
+    rm.addEventListener("click",()=>{rbState.steps.splice(i,1);if(!rbState.steps.length)rbState.steps.push([1]);renderSteps();renderPreview();});
+    const num=document.createElement("span");num.className="pill";num.textContent=i+1;
+    row.append(num,sel,up,dn,rm);host.appendChild(row);
+  });
+  $("#rb-free").textContent=`${MAX_TASK_BYTES-rbState.steps.length} slots free`;
+}
+$("#rb-add").addEventListener("click",()=>{if(rbState.steps.length>=MAX_TASK_BYTES){alert("Max "+MAX_TASK_BYTES+" steps.");return;}rbState.steps.push([1]);renderSteps();renderPreview();});
+
+function parseTime(){const v=$("#rb-time").value;if(!v)return null;const[h,m]=v.split(":").map(Number);return[h,m];}
+function renderPreview(){
+  const time=parseTime();
+  const sample=DAYS.find(d=>rbState.days.has(d))||"thursday";
+  const bytes=cmd.setDayRoutine(sample,time,rbState.steps);
+  $("#rb-preview").textContent=`payload for ${sample}: ${hex(bytes)}  (days: ${[...rbState.days].map(d=>DAY_SHORT[d]).join(", ")||"none"})`;
+}
+renderSteps();renderPreview();
+$("#rb-time").addEventListener("change",renderPreview);
+
+// write to cloud
+$("#rb-write").addEventListener("click",async()=>{if(!need())return;
+  if(!rbState.days.size){alert("Pick at least one day.");return;}
+  const time=parseTime();const out=$("#rb-out");const done=[];
+  for(const d of DAYS){if(!rbState.days.has(d))continue;
+    const bytes=cmd.setDayRoutine(d,time,rbState.steps);
+    await client.send(bytes);await sleep(250);done.push(`${DAY_SHORT[d]} ← ${hex(bytes)}`);}
+  out.innerHTML=`<div class="kv"><b>Written</b><span>${done.length} day(s)</span></div>`+done.map(l=>`<div class="hint" style="font-family:ui-monospace,monospace">${l}</div>`).join("");
+  handlers.log("routine written to "+done.length+" day(s). Now use Start on the Bedtime Routine tab to activate.");});
+
+$("#rb-clear").addEventListener("click",async()=>{if(!need())return;
+  if(!rbState.days.size){alert("Pick at least one day.");return;}
+  for(const d of DAYS){if(!rbState.days.has(d))continue;await client.send(cmd.setDayRoutine(d,null,[]));await sleep(250);}
+  handlers.log("cleared "+rbState.days.size+" day(s)");$("#rb-out").innerHTML='<div class="hint">Cleared selected days.</div>';});
+
+// read routines back
+const captures={};
+function recordCapture(day,opcode,args){captures[day]=hex(args);renderCaptures();}
+function decodeDayRoutine(h){
+  if(!h||h.length<4)return{time:"—",steps:"empty"};
+  const b=h.match(/.{2}/g).map(x=>parseInt(x,16));
+  if(b[0]===0xff&&b[1]===0xff)return{time:"(none)",steps:"empty"};
+  const unbcd=x=>((x>>4)*10)+(x&0x0f);
+  const time=`${String(unbcd(b[0])).padStart(2,"0")}:${String(unbcd(b[1])).padStart(2,"0")}`;
+  // A real task byte has a nonzero task-id (low nibble, 1..11). Everything else
+  // (0x00 padding, or stale high-nibble-only junk like 0x80) is not a step.
+  const tasks=b.slice(2).map(x=>({step:x>>4,id:x&0x0f})).filter(t=>t.id>=1&&t.id<=11)
+    .map(t=>`s${t.step}:${t.id}·${TASK_LABEL[t.id]||"?"}`);
+  return{time,steps:tasks.length?tasks.join("  "):"empty"};
+}
+function renderCaptures(){
+  const body=$("#cap-body");const rows=DAYS.filter(d=>captures[d]!==undefined);
+  if(!rows.length){body.innerHTML='<tr><td colspan="3" style="color:var(--muted)">Not read yet.</td></tr>';return;}
+  body.innerHTML=rows.map(d=>{const dec=decodeDayRoutine(captures[d]);return `<tr><td>${DAY_SHORT[d]}</td><td>${dec.time}</td><td>${dec.steps}</td></tr>`;}).join("");
+}
+$("#rb-read").addEventListener("click",async()=>{if(!need())return;
+  handlers.log("reading all 7 day routines");
+  for(const d of DAYS){await client.send(cmd.requestDayRoutine(d));await sleep(250);}});
+
+// ======================= WEEKLY SCHEDULE (Nanna/Sveglia) =======================
+const DAY_LONG={sunday:"Sunday",monday:"Monday",tuesday:"Tuesday",wednesday:"Wednesday",thursday:"Thursday",friday:"Friday",saturday:"Saturday"};
+const wsBody=$("#ws-body");
+DAYS.forEach(d=>{const tr=document.createElement("tr");
+  tr.innerHTML=`<td>${DAY_LONG[d]}</td>
+    <td><input type="time" data-ws="sleep" data-day="${d}" value="20:00" style="width:120px"></td>
+    <td><input type="time" data-ws="wake" data-day="${d}" value="08:00" style="width:120px"></td>`;
+  wsBody.appendChild(tr);});
+$("#ws-fill").addEventListener("click",()=>{
+  const s=$("#ws-fill-sleep").value,w=$("#ws-fill-wake").value;
+  $$('input[data-ws="sleep"]').forEach(i=>i.value=s);
+  $$('input[data-ws="wake"]').forEach(i=>i.value=w);
+});
+const wsTime=v=>{if(!v)return null;const[h,m]=v.split(":").map(Number);return[h,m];};
+$("#ws-write").addEventListener("click",async()=>{if(!need())return;
+  const sleepTimes=DAYS.map(d=>wsTime($(`input[data-ws="sleep"][data-day="${d}"]`).value));
+  const wakeTimes =DAYS.map(d=>wsTime($(`input[data-ws="wake"][data-day="${d}"]`).value));
+  await client.send(cmd.setSleepyTimes(sleepTimes));await sleep(250);
+  await client.send(cmd.setR2RTimes(wakeTimes));await sleep(250);
+  await client.send(cmd.setR2RAlarms(+$("#ws-alarm").value));await sleep(250);
+  await client.send(cmd.setR2RStatus(true));await sleep(250); // enable so the device acts on it
+  handlers.log("weekly schedule written (sleepy + r2r times + alarm + R2R enabled)");
+  setTimeout(()=>client.requestState(),500);});
+
+// ---- State ----
+$("#refresh-state").addEventListener("click",()=>{if(need())client.requestState();});
+function renderState(s){
+  $("#st-mode").textContent=OperationMode[s.operationMode]??s.operationMode;
+  $("#st-rstatus").textContent=s.routineModeStatus?"On":"Off";
+  $("#st-stage").textContent=Stage[s.currentStage]??s.currentStage;
+  $("#st-alarm").textContent=s.alarmExecuting?"Yes":"No";
+  // sync sliders
+  br.value=s.lightBrightness;$("#br-val").textContent=s.lightBrightness;
+  vol.value=s.currentVolume;$("#vol-val").textContent=s.currentVolume;
+  rv.value=s.routineVolume;$("#rv-val").textContent=s.routineVolume;
+  // dump
+  const rows=[
+    ["Operation mode",OperationMode[s.operationMode]??s.operationMode],
+    ["Routine mode",s.routineModeStatus?"On":"Off"],
+    ["Routine music",s.routineMusicStatus?"On":"Off"],
+    ["Routine volume",s.routineVolume],
+    ["Current stage",Stage[s.currentStage]??s.currentStage],
+    ["Alarm executing",s.alarmExecuting?"Yes":"No"],
+    ["Light status",s.lightStatus?"On":"Off"],
+    ["Light color",Object.keys(Color).find(k=>Color[k]===s.lightColor)||s.lightColor],
+    ["Light brightness",s.lightBrightness],
+    ["Light duration",s.lightDuration],
+    ["Music status",s.musicStatus?"On":"Off"],
+    ["Current song",s.currentSong],
+    ["Volume",s.currentVolume],
+    ["Playlist duration",s.playlistDuration],
+    ["Nap status",s.napTimeStatus?"On":"Off"],
+    ["Nap duration",s.napDuration],
+    ["Ready-to-Rise",s.ready2RiseStatus?"On":"Off"],
+    ["Clock display",s.clockDisplay?"On":"Off"],
+    ["Clock format",s.clockFormat?"24h":"12h"],
+  ];
+  $("#state-dump").innerHTML=rows.map(([k,v])=>`<div class="kv"><b>${k}</b><span>${v}</span></div>`).join("");
+}
+
+// mark connection-gated buttons
+$$("#r-start,#r-enable,#r-disable,#r-probe,#rc-prev,#rc-complete,#rc-restart,#rc-finish,#rc-cancel,#rm-on,#rm-off,#light-off,#light-dur-set,#audio-off,#audio-dur-set,#nap-start,#nap-alarm-set,#r2r-on,#r2r-off,#clock-sync,#clock-on,#clock-off,#global-on,#global-off,#refresh-state,#cap-all")
+  .forEach(b=>b.setAttribute("data-needs-conn",""));
+handlers.onConn(false);
+
+// ---- language switcher ----
+document.querySelectorAll("[data-lang]").forEach(b=>b.addEventListener("click",()=>{
+  LANG=b.dataset.lang;localStorage.setItem("lumalou-lang",LANG);applyLang();
+  // refresh dynamic bits that are built in JS
+  renderSteps();renderPreview();
+  if(!client?.connected){statusTxt.textContent=T("disconnected");}
+}));
+applyLang();
+// localize the idle status label on first paint
+if(!client?.connected)statusTxt.textContent=T("disconnected");
+
+if(!LumalouClient.isSupported()){
+  handlers.log("Web Bluetooth not available in this browser/context. Use Chrome or Edge (desktop/Android), or Bluefy on iOS, served over https or localhost.");
+}
+</script>
+</body>
+</html>
